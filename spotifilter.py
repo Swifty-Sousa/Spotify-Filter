@@ -8,6 +8,7 @@ import spotipy.util as util
 from keys import CLIENT_ID, CLIENT_SECRET
 import sys
 import json
+import time
 #authenticator for app, authenticates client
 #print(json.dumps(VAR, sort_keys=True, indent=4))
 #this is the username
@@ -54,22 +55,29 @@ def play_data(spo):
         #print(tracks[i]["track"]["name"])
         #print(tracks[i]["track"]["artists"][0]["name"])
     return Tracks
-
-
-
-#song skipper
-def test2(spo):
-    spo.next_track()
-#main controller
-def main():
-    spo=auth()
-    #test2(spo)
-    blocked_tracks=play_data(spo)
-    current_song=get_curr_song(spo)
+#asyc function to controll unit 
+def execute(spo, blocked_tracks):
+    current_song=spo.current_user_playing_track()
+    holder=get_curr_song(spo)
     for i in range(0,len(blocked_tracks)):
         #print(blocked_tracks[i][0] + ", "+ blocked_tracks[i][1])
         if blocked_tracks[i]==current_song:
             spo.next_track()
-            break
-    #test(spo)
+            execute(spo, blocked_tracks)
+            return
+    while holder==get_curr_song(spo):
+        time.sleep(1)
+    execute(spo, blocked_tracks)
+
+
+            
+        
+
+#main controller
+def main():
+    spo=auth()
+    print(json.dumps(spo.current_user_playing_track(), sort_keys=True, indent=4))
+    #test2(spo)
+    blocked_tracks=play_data(spo)
+    execute(spo,blocked_tracks)
 main()
